@@ -20,6 +20,7 @@ from opacus.accountants.utils import get_noise_multiplier
 from torch.utils.data import Subset, DataLoader, RandomSampler
 from load_data import load_tabular_local
 
+from Gaussian_svt import gaussian_svt
 
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
@@ -254,10 +255,12 @@ sampling_prob=args.batchsize/n_training
 noise_multiplier = get_noise_multiplier(target_epsilon= args.eps-0.4, target_delta=args.delta, 
             sample_rate= sampling_prob, epochs=args.n_epoch, accountant='rdp')
 
-noise_multiplier_2 = get_noise_multiplier(target_epsilon= 0.4, target_delta=args.delta, 
+noise_multiplier_threhold = get_noise_multiplier(target_epsilon= 0.2, target_delta=args.delta, 
+            sample_rate= 1, epochs=args.n_epoch, accountant='rdp')
+noise_multiplier_query = get_noise_multiplier(target_epsilon= 0.2, target_delta=args.delta, 
             sample_rate= 1, epochs=args.n_epoch, accountant='rdp')
 print('noise scale: ', noise_multiplier, 'privacy guarantee: ', args.eps)
-print('noise scale_trace: ', noise_multiplier_2)
+print('noise scale_trace: ', noise_multiplier_query)
 
 
 print('\n==> Creating '+ args.sess +' model instance')
@@ -396,24 +399,38 @@ def train(epoch):
         num = len(trace_per_sample)
         print(f"Total samples: {num}")
 
-        # ---- add noise ----
-        trace_tensor = trace_per_sample + torch.normal(
-            0, noise_multiplier_2 / num, size=trace_per_sample.shape, 
-            device=trace_per_sample.device 
+
+        idx_top, idx_rest, T_tilde = gaussian_svt(
+            queries=trace_per_sample,
+            epsilon=0.4,
+            delta=delta,
+            threshold=T,
+            sigma_q=noise_multiplier_query,
+            sigma_t=noise_multiplier_threhold,
         )
-
-        # ---- sort ----
-        trace_sorted, _ = torch.sort(trace_tensor, descending=True)
-        thr = trace_sorted[int(num * 0.1)]  # top 10% 
-
-        # ---- Top / Rest ----
-        trace_np = trace_tensor.cpu().numpy()
-        idx_top = np.nonzero(trace_np >= thr.item())[0].tolist()
-        idx_rest = np.nonzero(trace_np <  thr.item())[0].tolist()
-
-        print(f"Threshold (Top10%) = {thr:.6f}")
+        
+        print(f"Noisy Threshold = {T_tilde:.6f}")
         print(f"Top indices ({len(idx_top)}):")
         print(f"Rest indices ({len(idx_rest)}):")
+
+        # # ---- add noise ----
+        # trace_tensor = trace_per_sample + torch.normal(
+        #     0, noise_multiplier / num, size=trace_per_sample.shape, 
+        #     device=trace_per_sample.device 
+        # )
+
+        # # ---- sort ----
+        # trace_sorted, _ = torch.sort(trace_tensor, descending=True)
+        # thr = trace_sorted[int(num * 0.1)]  # top 10% 
+
+        # # ---- Top / Rest ----
+        # trace_np = trace_tensor.cpu().numpy()
+        # idx_top = np.nonzero(trace_np >= thr.item())[0].tolist()
+        # idx_rest = np.nonzero(trace_np <  thr.item())[0].tolist()
+
+        # print(f"Threshold (Top10%) = {thr:.6f}")
+        # print(f"Top indices ({len(idx_top)}):")
+        # print(f"Rest indices ({len(idx_rest)}):")
 
         top_subset = Subset(trainset, idx_top)
         rest_subset = Subset(trainset, idx_rest)
@@ -549,5 +566,6 @@ for epoch in range(start_epoch, args.n_epoch):
     train_loss, train_acc = train(epoch)
     test_loss, test_acc = test(epoch)
     save_pro.save_progress(args, accuracy_accountant, grad_norm_accountant)
+
 
 
