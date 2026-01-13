@@ -3,7 +3,6 @@ import math
 
 def gaussian_svt(
     queries,        # Tensor [n]
-    threshold,      # deterministic threshold T
     n_star,         # cutoff n*
     sigma_q,        # std of query noise
     sigma_t,        # std of threshold noise
@@ -29,7 +28,7 @@ def gaussian_svt(
         size=(1,),
         device=device
     )
-    T_tilde = threshold + rho
+    T_tilde = n + rho
 
     for i in range(n):
 
