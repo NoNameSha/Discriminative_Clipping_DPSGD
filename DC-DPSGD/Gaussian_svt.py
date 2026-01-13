@@ -29,7 +29,7 @@ def gaussian_svt(
         size=(1,),
         device=device
     )
-    T_tilde = 1*0.9 + rho
+    T_tilde = 1/k*0.9 + rho
 
     for i in range(n):
 
