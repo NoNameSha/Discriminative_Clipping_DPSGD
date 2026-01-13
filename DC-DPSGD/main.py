@@ -255,9 +255,9 @@ sampling_prob=args.batchsize/n_training
 noise_multiplier = get_noise_multiplier(target_epsilon= args.eps-0.4, target_delta=args.delta, 
             sample_rate= sampling_prob, epochs=args.n_epoch, accountant='rdp')
 
-noise_multiplier_threhold = get_noise_multiplier(target_epsilon= 0.2, target_delta=args.delta, 
+noise_multiplier_threhold = get_noise_multiplier(target_epsilon= 0.1, target_delta=args.delta, 
             sample_rate= 1, epochs=args.n_epoch, accountant='rdp')
-noise_multiplier_query = get_noise_multiplier(target_epsilon= 0.2, target_delta=args.delta, 
+noise_multiplier_query = get_noise_multiplier(target_epsilon= 0.3, target_delta=args.delta, 
             sample_rate= 1, epochs=args.n_epoch, accountant='rdp')
 print('noise scale: ', noise_multiplier, 'privacy guarantee: ', args.eps)
 print('noise scale_trace: ', noise_multiplier_query)
@@ -565,6 +565,7 @@ for epoch in range(start_epoch, args.n_epoch):
     train_loss, train_acc = train(epoch)
     test_loss, test_acc = test(epoch)
     save_pro.save_progress(args, accuracy_accountant, grad_norm_accountant)
+
 
 
 
