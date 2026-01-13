@@ -385,7 +385,7 @@ def train(epoch):
 
             # Weibull random projection + QR orthogonalization
             g_weibull = torch.distributions.weibull.Weibull(1.0, 1.0)
-            weibull_rp = g_weibull.sample((d, 100)).to(inputs.device)
+            weibull_rp = g_weibull.sample((d, 200)).to(inputs.device)
             Vk_layer, _ = torch.linalg.qr(weibull_rp, mode="reduced")  # [D, 100]
 
             dir_g = flat_g / flat_g.norm(dim=1, keepdim=True).clamp_min(1e-12)
@@ -403,6 +403,7 @@ def train(epoch):
         idx_top, idx_rest, T_tilde = gaussian_svt(
             queries=trace_per_sample,
             n_star=num*0.1,
+            k=200,
             sigma_q=noise_multiplier_query,
             sigma_t=noise_multiplier_threhold,
         )
@@ -564,6 +565,7 @@ for epoch in range(start_epoch, args.n_epoch):
     train_loss, train_acc = train(epoch)
     test_loss, test_acc = test(epoch)
     save_pro.save_progress(args, accuracy_accountant, grad_norm_accountant)
+
 
 
 
