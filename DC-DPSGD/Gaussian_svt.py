@@ -35,7 +35,7 @@ def gaussian_svt(
 
         v_i = torch.normal(
             mean=0.0,
-            std=2*sigma_q,
+            std=1/k*2*sigma_q,
             size=(1,),
             device=device
         )
@@ -50,7 +50,7 @@ def gaussian_svt(
 
             rho = torch.normal(
                 mean=0.0,
-                std=sigma_t,
+                std=1/k*sigma_t,
                 size=(1,),
                 device=device
             )
