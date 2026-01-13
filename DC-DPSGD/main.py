@@ -402,7 +402,6 @@ def train(epoch):
 
         idx_top, idx_rest, T_tilde = gaussian_svt(
             queries=trace_per_sample,
-            total_n=num,
             n_star=num*0.1,
             sigma_q=noise_multiplier_query,
             sigma_t=noise_multiplier_threhold,
@@ -565,6 +564,7 @@ for epoch in range(start_epoch, args.n_epoch):
     train_loss, train_acc = train(epoch)
     test_loss, test_acc = test(epoch)
     save_pro.save_progress(args, accuracy_accountant, grad_norm_accountant)
+
 
 
 
