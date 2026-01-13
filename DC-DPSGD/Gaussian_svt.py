@@ -4,6 +4,7 @@ import math
 def gaussian_svt(
     queries,        # Tensor [n]
     n_star,         # cutoff n*
+    k,              # subspace dimension k
     sigma_q,        # std of query noise
     sigma_t,        # std of threshold noise
 ):
