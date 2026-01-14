@@ -453,7 +453,6 @@ def train(epoch):
 
 
     net.train()
-    ### 12.24-10:55
     
     if epoch % 5 == 0 or epoch==args.n_epoch-1:
         args.f_epoch = True
@@ -565,6 +564,7 @@ for epoch in range(start_epoch, args.n_epoch):
     train_loss, train_acc = train(epoch)
     test_loss, test_acc = test(epoch)
     save_pro.save_progress(args, accuracy_accountant, grad_norm_accountant)
+
 
 
 
