@@ -20,7 +20,7 @@ from opacus.accountants.utils import get_noise_multiplier
 from torch.utils.data import Subset, DataLoader, RandomSampler
 from load_data import load_tabular_local
 
-from Gaussian_svt import gaussian_svt
+from gaussian_svt_domain_partition import GaussianSVTDomainPartition
 
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import train_test_split
@@ -94,7 +94,7 @@ if(args.seed != -1):
 print('==> Preparing data..')
 
 ### tabular dataset
-if(args.dataset == 'adult'): 
+if(args.dataset == 'adult'):
     adult_path = "./data/adult"
     X_train, X_test, y_train, y_test = load_tabular_local(args.dataset, adult_path)
 
@@ -106,10 +106,12 @@ if(args.dataset == 'adult'):
     Xte = torch.tensor(X_test, dtype=torch.float32)
     yte = torch.tensor(y_test, dtype=torch.long)
 
-    trainloader = DataLoader(TensorDataset(Xtr, ytr), batch_size=args.batchsize, shuffle=True)
-    testloader  = DataLoader(TensorDataset(Xte, yte), batch_size=16, shuffle=False)
+    trainset = TensorDataset(Xtr, ytr)
+    testset = TensorDataset(Xte, yte)
+    trainloader = DataLoader(trainset, batch_size=args.batchsize, shuffle=True)
+    testloader  = DataLoader(testset, batch_size=16, shuffle=False)
 
-elif(args.dataset == 'yeast'): 
+elif(args.dataset == 'yeast'):
     path = ""
     X_train, X_test, y_train, y_test = load_tabular_local(args.dataset, path)
 
@@ -121,10 +123,12 @@ elif(args.dataset == 'yeast'):
     Xte = torch.tensor(X_test, dtype=torch.float32)
     yte = torch.tensor(y_test, dtype=torch.long)
 
-    trainloader = DataLoader(TensorDataset(Xtr, ytr), batch_size=args.batchsize, shuffle=True)
-    testloader  = DataLoader(TensorDataset(Xte, yte), batch_size=16, shuffle=False)
+    trainset = TensorDataset(Xtr, ytr)
+    testset = TensorDataset(Xte, yte)
+    trainloader = DataLoader(trainset, batch_size=args.batchsize, shuffle=True)
+    testloader  = DataLoader(testset, batch_size=16, shuffle=False)
 
-elif(args.dataset == 'product'): 
+elif(args.dataset == 'product'):
     path = "./data/product/pricerunner_aggregate.csv"
     X_train, X_test, y_train, y_test = load_tabular_local(args.dataset, path)
 
@@ -136,9 +140,11 @@ elif(args.dataset == 'product'):
     Xte = torch.tensor(X_test, dtype=torch.float32)
     yte = torch.tensor(y_test, dtype=torch.long)
 
-    trainloader = DataLoader(TensorDataset(Xtr, ytr), batch_size=args.batchsize, shuffle=True)
-    testloader  = DataLoader(TensorDataset(Xte, yte), batch_size=16, shuffle=False)
-elif(args.dataset == 'bank'): 
+    trainset = TensorDataset(Xtr, ytr)
+    testset = TensorDataset(Xte, yte)
+    trainloader = DataLoader(trainset, batch_size=args.batchsize, shuffle=True)
+    testloader  = DataLoader(testset, batch_size=16, shuffle=False)
+elif(args.dataset == 'bank'):
     bank_path = "./data/bank/bank.csv"
     X_train, X_test, y_train, y_test = load_tabular_local(args.dataset, bank_path)
 
@@ -150,9 +156,11 @@ elif(args.dataset == 'bank'):
     Xte = torch.tensor(X_test, dtype=torch.float32)
     yte = torch.tensor(y_test, dtype=torch.long)
 
-    trainloader = DataLoader(TensorDataset(Xtr, ytr), batch_size=args.batchsize, shuffle=True)
-    testloader  = DataLoader(TensorDataset(Xte, yte), batch_size=16, shuffle=False)
-elif(args.dataset == 'credit'): 
+    trainset = TensorDataset(Xtr, ytr)
+    testset = TensorDataset(Xte, yte)
+    trainloader = DataLoader(trainset, batch_size=args.batchsize, shuffle=True)
+    testloader  = DataLoader(testset, batch_size=16, shuffle=False)
+elif(args.dataset == 'credit'):
     credit_path = "./data/credit_card/credit.xls"
     X_train, X_test, y_train, y_test = load_tabular_local(args.dataset, credit_path)
 
@@ -164,10 +172,12 @@ elif(args.dataset == 'credit'):
     Xte = torch.tensor(X_test, dtype=torch.float32)
     yte = torch.tensor(y_test, dtype=torch.long)
 
-    trainloader = DataLoader(TensorDataset(Xtr, ytr), batch_size=args.batchsize, shuffle=True)
-    testloader  = DataLoader(TensorDataset(Xte, yte), batch_size=16, shuffle=False)
+    trainset = TensorDataset(Xtr, ytr)
+    testset = TensorDataset(Xte, yte)
+    trainloader = DataLoader(trainset, batch_size=args.batchsize, shuffle=True)
+    testloader  = DataLoader(testset, batch_size=16, shuffle=False)
 
-elif(args.dataset == 'breast_cancer'): 
+elif(args.dataset == 'breast_cancer'):
     X, y = load_breast_cancer(return_X_y=True, as_frame=False)
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
@@ -183,15 +193,17 @@ elif(args.dataset == 'breast_cancer'):
     Xte = torch.tensor(X_test_std, dtype=torch.float32)
     yte = torch.tensor(y_test, dtype=torch.long)
 
-    trainloader = DataLoader(TensorDataset(Xtr, ytr), batch_size=args.batchsize, shuffle=True)
-    testloader  = DataLoader(TensorDataset(Xte, yte), batch_size=16, shuffle=False)
+    trainset = TensorDataset(Xtr, ytr)
+    testset = TensorDataset(Xte, yte)
+    trainloader = DataLoader(trainset, batch_size=args.batchsize, shuffle=True)
+    testloader  = DataLoader(testset, batch_size=16, shuffle=False)
 elif(args.dataset == 'android_malware'):
 
-    df = pd.read_csv("./data/malware/TUANDROMD.csv") 
-    df.columns = [c.strip().lower() for c in df.columns]  
+    df = pd.read_csv("./data/malware/TUANDROMD.csv")
+    df.columns = [c.strip().lower() for c in df.columns]
 
     df['label'] = df['label'].replace([np.inf, -np.inf], np.nan)
-    df = df.dropna(subset=['label']) 
+    df = df.dropna(subset=['label'])
 
 
     if df["label"].dtype == object:
@@ -228,8 +240,10 @@ elif(args.dataset == 'android_malware'):
     Xte = torch.tensor(X_test_proc, dtype=torch.float32)
     yte = torch.tensor(y_test, dtype=torch.long)
 
-    trainloader = DataLoader(TensorDataset(Xtr, ytr), batch_size=args.batchsize, shuffle=True)
-    testloader  = DataLoader(TensorDataset(Xte, yte), batch_size=16, shuffle=False)
+    trainset = TensorDataset(Xtr, ytr)
+    testset = TensorDataset(Xte, yte)
+    trainloader = DataLoader(trainset, batch_size=args.batchsize, shuffle=True)
+    testloader  = DataLoader(testset, batch_size=16, shuffle=False)
 
 ### image dataset
 if(args.dataset == 'cifar10'):
@@ -363,73 +377,53 @@ def train(epoch):
 
     if(args.private):
         net.eval()
-        per_sample_norms = []
-        trace_per_sample = []  
+        per_sample_gradients = []  # Collect all per-sample gradients
 
         for batch_idx, (inputs, targets) in enumerate(trainloader):
             inputs, targets = inputs.cuda(), targets.cuda()
 
             outputs = net(inputs)
             loss = loss_func(outputs, targets)
-            
+
             net.zero_grad()
             with backpack(BatchGrad()):
                 loss.backward()
 
+            # Collect per-sample gradients as flattened tensors
             grads_flat = []
             for p in net.parameters():
                 if hasattr(p, "grad_batch") and p.grad_batch is not None:
                     grads_flat.append(p.grad_batch.reshape(inputs.size(0), -1))
             flat_g = torch.cat(grads_flat, dim=1)  # [B, D]
-            _, d = flat_g.shape
 
-            # Weibull random projection + QR orthogonalization
-            g_weibull = torch.distributions.weibull.Weibull(1.0, 1.0)
-            weibull_rp = g_weibull.sample((d, 200)).to(inputs.device)
-            Vk_layer, _ = torch.linalg.qr(weibull_rp, mode="reduced")  # [D, 100]
+            # Store each sample's gradient as a separate tensor
+            for i in range(flat_g.size(0)):
+                per_sample_gradients.append(flat_g[i])
 
-            dir_g = flat_g / flat_g.norm(dim=1, keepdim=True).clamp_min(1e-12)
-            abs_dir_g = dir_g.abs()  # [B, D]
-
-            proj = abs_dir_g @ Vk_layer          # [B, 100]
-            trace_batch = (proj ** 2).sum(dim=1)  # [B] 
-            trace_per_sample.append(trace_batch)
-
-        trace_per_sample = torch.cat(trace_per_sample, dim=0)  # [N]
-        num = len(trace_per_sample)
+        num = len(per_sample_gradients)
         print(f"Total samples: {num}")
 
-
-        idx_top, idx_rest, T_tilde = gaussian_svt(
-            queries=trace_per_sample,
-            n_star=num*0.1,
-            k=200,
-            sigma_q=noise_multiplier_query,
-            sigma_t=noise_multiplier_threhold,
+        # Initialize Gaussian SVT with domain partition
+        svt = GaussianSVTDomainPartition(
+            subspace_dim=200,
+            tail_proportion=0.1,
+            sigma1=noise_multiplier_threhold,
+            sigma2=noise_multiplier_query,
+            epsilon_tr=0.4,
+            delta_tr=args.delta,
+            theta=1.0,  # Using theta=1.0 for Weibull distribution
+            device='cuda'
         )
-        
-        print(f"Noisy Threshold = {T_tilde:.6f}")
+
+        # Run SVT-based private selection
+        idx_top, idx_rest = svt.select_heavy_tail_samples(
+            gradients=per_sample_gradients,
+            threshold=None,  # Auto-compute threshold
+            parallel=False  # Set to True for parallel execution if needed
+        )
+
         print(f"Top indices ({len(idx_top)}):")
         print(f"Rest indices ({len(idx_rest)}):")
-
-        # # ---- add noise ----
-        # trace_tensor = trace_per_sample + torch.normal(
-        #     0, noise_multiplier / num, size=trace_per_sample.shape, 
-        #     device=trace_per_sample.device 
-        # )
-
-        # # ---- sort ----
-        # trace_sorted, _ = torch.sort(trace_tensor, descending=True)
-        # thr = trace_sorted[int(num * 0.1)]  # top 10% 
-
-        # # ---- Top / Rest ----
-        # trace_np = trace_tensor.cpu().numpy()
-        # idx_top = np.nonzero(trace_np >= thr.item())[0].tolist()
-        # idx_rest = np.nonzero(trace_np <  thr.item())[0].tolist()
-
-        # print(f"Threshold (Top10%) = {thr:.6f}")
-        # print(f"Top indices ({len(idx_top)}):")
-        # print(f"Rest indices ({len(idx_rest)}):")
 
         top_subset = Subset(trainset, idx_top)
         rest_subset = Subset(trainset, idx_rest)
@@ -564,6 +558,8 @@ for epoch in range(start_epoch, args.n_epoch):
     train_loss, train_acc = train(epoch)
     test_loss, test_acc = test(epoch)
     save_pro.save_progress(args, accuracy_accountant, grad_norm_accountant)
+
+
 
 
 
