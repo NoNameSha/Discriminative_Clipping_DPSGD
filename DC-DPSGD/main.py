@@ -416,7 +416,7 @@ def train(epoch):
         )
 
         # Run SVT-based private selection
-        idx_top, idx_rest = svt.select_heavy_tail_samples(
+        idx_top, idx_rest, _ = svt.select_heavy_tail_samples(
             gradients=per_sample_gradients,
             threshold=None,  # Auto-compute threshold
             parallel=False  # Set to True for parallel execution if needed
