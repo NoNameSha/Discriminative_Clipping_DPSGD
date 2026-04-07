@@ -213,8 +213,9 @@ class GaussianSVTDomainPartition:
         all_indices = set(range(n))
         tail_indices = set(heavy_tail_indices)
         body_indices = list(all_indices - tail_indices)
+        actual_tail_count = len(tail_indices)
 
-        return list(tail_indices), body_indices
+        return list(tail_indices), body_indices, actual_tail_count
 
     def __call__(
         self,
